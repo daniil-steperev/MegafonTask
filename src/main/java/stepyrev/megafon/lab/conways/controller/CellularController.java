@@ -20,7 +20,7 @@ public class CellularController {
   }
 
   /** A method that performs one game iteration. */
-  public void makeGameIteration() {
+  public boolean makeGameIteration() {
     // a table that contains all alive cellulars after iteration
     aliveCellularNextIterationTable = new Hashtable<>(aliveCellularTable);
 
@@ -37,7 +37,12 @@ public class CellularController {
       }
     }
 
+    if (aliveCellularTable.equals(aliveCellularNextIterationTable)) {
+      return false;
+    }
+
     aliveCellularTable = aliveCellularNextIterationTable;
+    return true;
   }
 
   /**

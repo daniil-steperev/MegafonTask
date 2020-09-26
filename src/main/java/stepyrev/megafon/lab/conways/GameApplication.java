@@ -2,6 +2,7 @@ package stepyrev.megafon.lab.conways;
 
 import com.javarush.engine.cell.Color;
 import com.javarush.engine.cell.Game;
+import com.javarush.engine.cell.Key;
 import java.util.List;
 import stepyrev.megafon.lab.conways.controller.CellularController;
 import stepyrev.megafon.lab.conways.domain.Cellular;
@@ -19,6 +20,8 @@ public class GameApplication extends Game {
   /** A 'y' coordinate of the first cellular object. */
   private static final int FIRST_Y = HEIGHT / 2;
 
+  private boolean isGameStopped;
+
 
   /** A cellular controller. */
   private CellularController controller;
@@ -31,20 +34,41 @@ public class GameApplication extends Game {
     showGrid(true);
   }
 
-  /** A method that realizes events that occurs during one turn. */
-  public void onTurn(int step) {
-    check();
-    controller.makeGameIteration();
-    drawScene();
-  }
-
   /** A method that creates a game. */
   private void createGame() {
     controller = new CellularController();
     createCellularObject();
     drawScene();
+
+    isGameStopped = true;
+    startGame();
+  }
+
+  private void startGame() {
     controller.draw(this);
     setTurnTimer(500);
+    isGameStopped = false;
+  }
+
+  /** A method that realizes events that occurs during one turn. */
+  public void onTurn(int step) {
+    check();
+    boolean isFieldChanged = controller.makeGameIteration();
+    if (!isFieldChanged) {
+      finishGame("All cellulars are stabled!");
+    }
+    drawScene();
+  }
+
+  /** A method that reflects all events that occurs when key button was pressed. */
+  @Override
+  public void onKeyPress(Key key) {
+    if (key == Key.SPACE) {
+      if (isGameStopped) {
+        createGame();
+        startGame();
+      }
+    }
   }
 
 
@@ -79,14 +103,20 @@ public class GameApplication extends Game {
   private void check() {
     int aliveCellularsNumber = controller.getAliveCellularsNumber();
     if (aliveCellularsNumber == 0) {
-      finishGame();
+      finishGame("All cellulars are dead!");
     }
   }
 
-  private void finishGame() {
-    String message = "All cellulars are dead! " + "\n" + "Game is over.";
-    showMessageDialog(Color.DARKSEAGREEN, message, Color.RED, 50);
+  /**
+   * A method that finishes the game.
+   * @param message - a message that will be printed to user
+   */
+  private void finishGame(String message) {
+    StringBuilder msg = new StringBuilder(message);
+    msg.append("\n");
+    msg.append("To restart the game press Space.");
+    showMessageDialog(Color.LIMEGREEN, msg.toString(), Color.WHITE, 35);
     stopTurnTimer();
-
+    isGameStopped = true;
   }
 }
